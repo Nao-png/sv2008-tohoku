@@ -1,0 +1,4 @@
+# Over GitHub's 100 MB limit; published as sv2008_panoids.zip instead
+sv2008_panoids.csv
+__pycache__/
+venv/

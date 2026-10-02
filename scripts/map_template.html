@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2008年ストリートビュー地図</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#666}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16161a;--fg:#eee;--muted:#aaa}}
+:root[data-theme="dark"]{--bg:#16161a;--fg:#eee;--muted:#aaa}
+html,body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:system-ui,"Hiragino Sans","Yu Gothic UI",sans-serif}
+header{padding:8px 16px;font-size:13px;line-height:1.6}
+header b{font-size:16px}
+.k{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px 0 10px;vertical-align:middle}
+#map{flex:1;min-height:0}
+header{flex:none}
+</style></head><body>
+<header><b>2008年のストリートビュー（__N__地点）</b>
+<span id="lg"></span><br>
+<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます</span></header>
+<div id="map"></div>
+<script>
+const IDS=__IDS__, LAT=__LAT__, LON=__LON__, MON=__MON__, BASE=[__BLAT__,__BLON__];
+const MONTHS=__MONTHS__, COLORS=['#0f766e','#c2410c','#1d4ed8','#7c3aed','#b91c1c'];
+const N=IDS.length, wx=new Float64Array(N), wy=new Float64Array(N);
+for(let i=0;i<N;i++){const la=BASE[0]+LAT[i]/1e6, lo=BASE[1]+LON[i]/1e6;
+  wx[i]=(lo+180)/360*256; const s=Math.sin(la*Math.PI/180); wy[i]=(0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*256;}
+const BZ=13, B=new Map();
+for(let i=0;i<N;i++){const k=Math.floor(wx[i]*2**BZ/256)+','+Math.floor(wy[i]*2**BZ/256); let a=B.get(k); if(!a)B.set(k,a=[]); a.push(i);}
+const cnt=MONTHS.map(()=>0); for(let i=0;i<N;i++)cnt[MON[i]]++;
+document.getElementById('lg').innerHTML=MONTHS.map((m,j)=>`<span class="k" style="background:${COLORS[j]}"></span>${m}（${cnt[j].toLocaleString()}）`).join('');
+function each(x0,y0,x1,y1,f){ // world px at zoom0
+  const s=2**BZ/256, bx0=Math.floor(x0*s), bx1=Math.floor(x1*s), by0=Math.floor(y0*s), by1=Math.floor(y1*s);
+  if((bx1-bx0+1)*(by1-by0+1)>B.size){for(const [k,a] of B){const c=k.indexOf(','),bx=+k.slice(0,c),by=+k.slice(c+1); if(bx>=bx0&&bx<=bx1&&by>=by0&&by<=by1)for(const i of a)f(i);} return;}
+  for(let bx=bx0;bx<=bx1;bx++)for(let by=by0;by<=by1;by++){const a=B.get(bx+','+by); if(a)for(const i of a)f(i);}
+}
+const map=L.map('map');
+const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>';
+const bases={'淡色地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
+ '標準地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
+ '航空写真':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI})};
+bases['淡色地図'].addTo(map); L.control.layers(bases,null,{collapsed:false}).addTo(map);
+const Pts=L.GridLayer.extend({createTile(c){
+  const cv=document.createElement('canvas'); cv.width=cv.height=256; const g=cv.getContext('2d');
+  const sc=2**c.z, pad=4/sc, x0=c.x*256/sc, y0=c.y*256/sc, x1=(c.x+1)*256/sc, y1=(c.y+1)*256/sc;
+  const r=c.z>=16?3.5:c.z>=14?2.2:1.3;
+  each(x0-pad,y0-pad,x1+pad,y1+pad,i=>{g.fillStyle=COLORS[MON[i]]; g.beginPath(); g.arc((wx[i]-x0)*sc,(wy[i]-y0)*sc,r,0,6.2832); g.fill();});
+  return cv;}});
+new Pts({maxZoom:19}).addTo(map);
+L.geoJSON(__OUTLINE__,{style:{color:'#666',weight:1.5,dashArray:'6 6',fill:false},interactive:false}).addTo(map);
+L.circleMarker([38.1738916,140.9329488],{radius:8,color:'#000',weight:2,fill:false}).addTo(map).bindTooltip('最初のURLの地点');
+map.on('click',e=>{
+  const sc=2**map.getZoom(), p=map.project(e.latlng,0), tol=10/sc; let best=-1,bd=tol*tol;
+  each(p.x-tol,p.y-tol,p.x+tol,p.y+tol,i=>{const d=(wx[i]-p.x)**2+(wy[i]-p.y)**2; if(d<bd){bd=d;best=i;}});
+  if(best<0)return;
+  const la=(BASE[0]+LAT[best]/1e6).toFixed(6), lo=(BASE[1]+LON[best]/1e6).toFixed(6);
+  const url=`https://www.google.com/maps/@${la},${lo},3a,75y,0h,90t/data=!3m4!1e1!3m2!1s${IDS[best]}!2e0`;
+  L.popup().setLatLng([la,lo]).setContent(`<b>${MONTHS[MON[best]]}</b><br>${IDS[best]}<br><a href="${url}" target="_blank" rel="noopener">Google マップで開く</a>`).openOn(map);
+});
+{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(let i=0;i<N;i++){a=Math.min(a,LAT[i]);b=Math.max(b,LAT[i]);c=Math.min(c,LON[i]);d=Math.max(d,LON[i]);} const bb=L.latLngBounds([[BASE[0]+a/1e6,BASE[1]+c/1e6],[BASE[0]+b/1e6,BASE[1]+d/1e6]]); if(map.getSize().y>0)map.fitBounds(bb); else map.setView(bb.getCenter(),9);}
+</script></body></html>

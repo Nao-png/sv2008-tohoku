@@ -1,0 +1,9 @@
+21:57:31 start seen=737143 frontier=22 conc=32
+21:59:03 new 20000 total 757139 queue 1 errors 0 216/s last=(38.000,140.195)
+21:59:53 new 40000 total 777179 queue 27 errors 0 282/s last=(38.246,140.331)
+22:01:12 new 60000 total 797133 queue 1 errors 0 271/s last=(37.751,140.410)
+22:03:42 giveup tH0OHeZvsUqi_PEh2gtNDg
+22:04:01 giveup pvho3YfCs3q2qNr_UvyKXQ
+22:04:01 DONE new 68019 total 805142 months {'2008-07': 64426, '2008-11': 3593} errors 0 giveup 2 391s
+22:53:15 start seen=805142 frontier=2 conc=32
+22:58:39 DONE new 11963 total 817103 months {'2008-05': 9701, '2008-07': 2262} errors 0 giveup 0 324s
