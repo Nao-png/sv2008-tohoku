@@ -23,7 +23,7 @@ venv\Scripts\python -m pip install requests aiohttp numpy pillow pyproj protobuf
 | `build_map.py` | `panos.csv` から `../index.html` と `../sv2008_panoids.csv` を作る |
 | `map_template.html` | 地図の HTML テンプレート（Leaflet + 国土地理院タイル） |
 | `miyagi.json` | 宮城県の県境（OpenStreetMap Nominatim から取得） |
-| `panos.csv` | 探索結果の生データ（panoid, 緯度, 経度, 撮影年月）。830,862 行 |
+| `panos.csv` | 探索結果の生データ（panoid, 緯度, 経度, 撮影年月）。831,953 行 |
 | `probe09*.py`, `yonezawa.py` | 2009 年前半の画像や米沢周辺のつながりを調べた調査用スクリプト |
 | `*.log`, `frontier.json` | 探索時のログと、最後に残った未確認キュー（空） |
 

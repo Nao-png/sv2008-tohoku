@@ -11,3 +11,5 @@
 19:04:36 DONE new 13410 total 830513 months {'2008-07': 13410} errors 0 giveup 0 63s
 19:05:30 start seen=830515 frontier=2 conc=32
 19:05:45 DONE new 349 total 830862 months {'2008-07': 349} errors 0 giveup 0 15s
+19:19:09 start seen=830864 frontier=2 conc=32
+19:19:52 DONE new 1091 total 831953 months {'2008-07': 1091} errors 0 giveup 0 43s
