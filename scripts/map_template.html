@@ -55,7 +55,6 @@ map.on('click',e=>{
   L.popup().setLatLng([la,lo]).setContent(`<b>${MONTHS[MON[best]]}</b><br>${IDS[best]}<br><a href="${url}" target="_blank" rel="noopener">Google マップで開く</a>`).openOn(map);
 });
 {let a=1e9,b=-1e9,c=1e9,d=-1e9;for(let i=0;i<N;i++){a=Math.min(a,LAT[i]);b=Math.max(b,LAT[i]);c=Math.min(c,LON[i]);d=Math.max(d,LON[i]);} const bb=L.latLngBounds([[BASE[0]+a/1e6,BASE[1]+c/1e6],[BASE[0]+b/1e6,BASE[1]+d/1e6]]); if(map.getSize().y>0)map.fitBounds(bb); else map.setView(bb.getCenter(),9);}
-// vector layers go in after the initial view exists (adding them during the load event leaves the renderer without bounds)
+// the outline goes in after the initial view exists (adding it during the load event leaves the renderer without bounds)
 L.geoJSON(__OUTLINE__,{style:{color:'#666',weight:1.5,dashArray:'6 6',fill:false},interactive:false}).addTo(map);
-L.circleMarker([38.1738916,140.9329488],{radius:8,color:'#000',weight:2,fill:false}).addTo(map).bindTooltip('最初のURLの地点');
 </script></body></html>
