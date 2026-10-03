@@ -21,6 +21,7 @@ venv\Scripts\python -m pip install requests aiohttp numpy pillow pyproj protobuf
 | `ncrawl.py` | 全国版の探索。`panos.csv` に追記し、`frontier.json` から再開できる。引数は同時接続数（例: `32`） |
 | `mcrawl.py` | 宮城県版の探索（`miyagi.json` の県境内だけ広げる）。`build_map.py` からも県境の判定に使う |
 | `build_map.py` | `panos.csv` から `../index.html` と `../sv2008_panoids.csv` を作る |
+| `build_now.py` | 各 2008 年の地点から 30m 以内の現在の道路画像を探し、`../now/` に書き出す（Street View の coverage tile を使用。キャッシュは `coverage_cache.jsonl`） |
 | `map_template.html` | 地図の HTML テンプレート（Leaflet + 国土地理院タイル） |
 | `miyagi.json` | 宮城県の県境（OpenStreetMap Nominatim から取得） |
 | `panos.csv` | 探索結果の生データ（panoid, 緯度, 経度, 撮影年月）。817,103 行 |

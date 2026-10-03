@@ -24,6 +24,9 @@ header b{font-size:16px}
 .pane h3{flex:none;margin:0;padding:4px 10px;font-size:13px;font-weight:600}
 .pane h3 span{font-weight:400;color:var(--muted);margin-left:6px}
 .pane iframe{flex:1;width:100%;border:0;background:#000}
+.pane iframe[hidden]{display:none}
+.msg{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;font-size:13px;color:var(--muted)}
+.msg[hidden]{display:none}
 </style><style>
 .selpt{border-radius:50%;background:#e11d48;border:3px solid #fff;box-shadow:0 0 0 1px #0006;box-sizing:border-box}
 @media (max-width:800px){
@@ -48,7 +51,7 @@ header b{font-size:16px}
     <button id="close" title="閉じる">✕</button>
   </div>
   <div class="pane"><h3 id="m08">2008年</h3><iframe id="f08" title="2008年のストリートビュー" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>
-  <div class="pane"><h3>現在<span>（その場所の最新の画像）</span></h3><iframe id="fnow" title="現在のストリートビュー" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+  <div class="pane"><h3>現在<span>（近くの道路の最新の画像）</span></h3><iframe id="fnow" title="現在のストリートビュー" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe><div id="nonow" class="msg" hidden></div></div>
 </div>
 </div>
 <script>
@@ -92,15 +95,33 @@ function roadHeading(i){ // bearing toward the nearest neighbouring 2008 panoram
   const x=Math.cos(lat(i)*Math.PI/180)*Math.sin(lat(j)*Math.PI/180)-Math.sin(lat(i)*Math.PI/180)*Math.cos(lat(j)*Math.PI/180)*Math.cos((lon(j)-lon(i))*Math.PI/180);
   return Math.round((Math.atan2(y,x)*180/Math.PI+360)%360);
 }
+// The current panorama is looked up by ID from now/<z13x>_<z13y>.json (nearest Google road
+// panorama within 30 m, built offline from coverage tiles). Searching by location instead can land
+// on underground/indoor levels or user-uploaded photospheres.
+const nowChunks=new Map();
+function nowChunk(i){
+  const x=Math.floor(wx[i]*2**13/256), y=Math.floor(wy[i]*2**13/256), k=`${x}_${y}`;
+  if(!nowChunks.has(k)) nowChunks.set(k, fetch(`now/${k}.json`).then(r=>r.ok?r.json():{}).catch(()=>{nowChunks.delete(k); return null;}));
+  return nowChunks.get(k);
+}
+const embed=(id,la,lo,h)=>`https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1s${id}!2m2!1d${la}!2d${lo}!3f${h}!4f0!5f0.78`;
+const gmaps=(id,la,lo,h)=>`https://www.google.com/maps/@${la},${lo},3a,75y,${h}h,90t/data=!3m4!1e1!3m2!1s${id}!2e0`;
+function showNow(nowId,failed){
+  const i=cur, la=lat(i).toFixed(7), lo=lon(i).toFixed(7), h=heading;
+  $('fnow').hidden=!nowId; $('nonow').hidden=!!nowId; $('gnow').hidden=!nowId;
+  if(nowId){ $('fnow').src=embed(nowId,la,lo,h); $('gnow').href=gmaps(nowId,la,lo,h); return; }
+  $('fnow').src='about:blank';
+  $('nonow').textContent=failed?'現在の画像のデータを読み込めませんでした（公開サイトから開いてください）':'この地点の30m以内には、現在のGoogleの道路画像がありません';
+}
 function render(){
   const i=cur, la=lat(i).toFixed(7), lo=lon(i).toFixed(7), h=heading;
-  $('f08').src=`https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1s${IDS[i]}!2m2!1d${la}!2d${lo}!3f${h}!4f0!5f0.78`;
-  $('fnow').src=`https://maps.google.com/maps?layer=c&cbll=${la},${lo}&cbp=12,${h},,0,0&output=svembed`;
-  $('g08').href=`https://www.google.com/maps/@${la},${lo},3a,75y,${h}h,90t/data=!3m4!1e1!3m2!1s${IDS[i]}!2e0`;
-  $('gnow').href=`https://www.google.com/maps/@${la},${lo},3a,75y,${h}h,90t/data=!3m1!1e1`;
+  $('f08').src=embed(IDS[i],la,lo,h);
+  $('g08').href=gmaps(IDS[i],la,lo,h);
   history.replaceState(null,'',`#${IDS[i]},${h}`);
+  nowChunk(i).then(c=>{ if(cur===i) showNow(c&&c[IDS[i]], c===null); });
 }
 function select(i,h){
+  if(i!==cur){ $('fnow').src='about:blank'; $('nonow').hidden=true; $('fnow').hidden=false; }
   cur=i; heading=(h==null?roadHeading(i):h);
   $('m08').textContent=MONTHS[MON[i]];
   $('info').innerHTML=`${lat(i).toFixed(5)}, ${lon(i).toFixed(5)}<br><code>${IDS[i]}</code>`;
@@ -123,5 +144,7 @@ L.geoJSON(__OUTLINE__,{style:{color:'#666',weight:1.5,dashArray:'6 6',fill:false
 L.circleMarker([38.1738916,140.9329488],{radius:8,color:'#000',weight:2,fill:false}).addTo(map).bindTooltip('最初のURLの地点');
 sel.addTo(map);
 // open a shared link: #<panoid>[,<heading>]
-map.whenReady(()=>setTimeout(()=>{const m=location.hash.match(/^#([A-Za-z0-9_-]{22})(?:,(\d+))?/); if(m){const i=IDS.indexOf(m[1]); if(i>=0){map.setView([lat(i),lon(i)],17); select(i,m[2]==null?null:+m[2]);}}},0));
+function openHash(){const m=location.hash.match(/^#([A-Za-z0-9_-]{22})(?:,(\d+))?/); if(m){const i=IDS.indexOf(m[1]); if(i>=0){map.setView([lat(i),lon(i)],17); select(i,m[2]==null?null:+m[2]);}}}
+map.whenReady(()=>setTimeout(openHash,0));
+addEventListener('hashchange',openHash);  // a shared link pasted into an already-open tab
 </script></body></html>
