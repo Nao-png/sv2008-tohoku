@@ -27,6 +27,34 @@ Google ストリートビューの撮影日一覧（タイムマシン）から�
 - 2008 年の画像どうしはリンクでつながっているため、1 枚から順にたどることで一帯を集めました。
   2008 年以外の画像へのリンクはなく、関東など他地域の 2008 年の画像は削除済みでした。
 
+## 調査に使ったサイト
+
+### 2008 年の画像 ID の手がかりになったもの
+
+| サイト | 使い方 |
+|---|---|
+| [mizoyuzu さんの投稿（X）](https://x.com/mizoserver/status/2104535489995034991) | 名取市の 2008 年の画像へのリンク。ここから最初の 1 枚を見つけ、宮城を中心とする 805,140 地点をたどった |
+| [未来へのキオク](https://www.miraikioku.com/) | 「震災前」表示（`?m=sv&ll=緯度,経度&period=before`）で、その場所の 2008 年の画像を位置から探せる。取りこぼし確認（宮城県の空白区間、岩手・福島沿岸、青森、いわき市）に使用 |
+| [未来へのキオク（archive.today、2013 年 3 月）](https://archive.li/R5j3v) | 地図に震災前のストリートビューの範囲が青線で描かれていた。茨城県沿岸に未発見の範囲があることが分かった |
+| [Web Archive の「未来へのキオク」URL 一覧](http://web.archive.org/cdx/search/cdx?url=www.miraikioku.com/&matchType=prefix&filter=original:.*panoid=.*&fl=original&collapse=urlkey) | 保存された URL に `panoid=…&period=before` が含まれる。茨城（`b8xXjrWHvgCqbzcMFv6XOA`）と郡山（`ZEs_nnLp4GUMPoTJOR0fxQ`）の起点はここから |
+| [未来へのキオク「震災前」ページ（Web Archive、2012 年 1 月）](http://web.archive.org/web/20120109070557/http://www.miraikioku.com:80/streetview/before) | 当時のスクリプトから、震災前の画像が専用の client 名 `japan_prequake` で配信されていたことが分かった |
+
+### 背景の確認に使ったもの
+
+| サイト | 内容 |
+|---|---|
+| [Google ブログ（2011 年 12 月 13 日）](https://blog.google/intl/ja-jp/products/explore-get-answers/2011_12_blog-post_13/) | 「未来へのキオク」で震災前後のストリートビューを特別に公開した経緯 |
+| [Yahoo!知恵袋](https://detail.chiebukuro.yahoo.co.jp/qa/question_detail/q14297287859) | 2008 年の公開地域と、2009 年にカメラを下げて撮り直された経緯 |
+| [Geoguessr Japan Wiki「撮影機器」](https://wikiwiki.jp/geoguessr/%E6%92%AE%E5%BD%B1%E6%A9%9F%E5%99%A8) | カメラの世代（Gen1・Gen2）の見分け方 |
+| [ameblo（2021 年 9 月 17 日）](https://ameblo.jp/i-love-conveni/entry-12698519537.html) | 2008 年の画像が 2021 年 9 月に全国で再公開され、2022 年 3 月 1 日ごろ一斉に見られなくなった経緯 |
+
+### 削除済みだと確かめたもの
+
+| サイト | 内容 |
+|---|---|
+| [ameblo（2021 年 9 月 12 日）](https://ameblo.jp/gorondeener-blog/entry-12697495399.html) | 小田原・大田区の 2008 年の画像 ID。現在は削除済み |
+| [Seesaa ブログ（2021 年 9 月 20 日）](https://sstalk.seesaa.net/article/483510541.html) | 千葉・津田沼・船橋の 2008 年の画像 ID。現在は削除済み |
+
 ## ファイル
 
 | ファイル | 内容 |
