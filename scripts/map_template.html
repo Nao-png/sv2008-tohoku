@@ -1,64 +1,23 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>2008年ストリートビュー今昔</title>
+<title>2008年ストリートビュー地図</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<!-- Optional: config.js sets window.GMAPS_KEY. With a key, the two views use the Maps JavaScript API and
-     stay in sync; without one they fall back to independent Google Maps embeds. -->
-<script src="config.js"></script>
 <style>
-:root{--bg:#fff;--fg:#1a1a1a;--muted:#666;--line:#ddd;--panel:#f6f6f4;--accent:#c2410c}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16161a;--fg:#eee;--muted:#aaa;--line:#333;--panel:#1f1f24;--accent:#fb923c}}
-:root[data-theme="dark"]{--bg:#16161a;--fg:#eee;--muted:#aaa;--line:#333;--panel:#1f1f24;--accent:#fb923c}
+:root{--bg:#fff;--fg:#1a1a1a;--muted:#666}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16161a;--fg:#eee;--muted:#aaa}}
+:root[data-theme="dark"]{--bg:#16161a;--fg:#eee;--muted:#aaa}
 html,body{margin:0;height:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:system-ui,"Hiragino Sans","Yu Gothic UI",sans-serif}
-header{flex:none;padding:8px 16px;font-size:13px;line-height:1.6;border-bottom:1px solid var(--line)}
+header{padding:8px 16px;font-size:13px;line-height:1.6}
 header b{font-size:16px}
 .k{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 4px 0 10px;vertical-align:middle}
-#wrap{flex:1;min-height:0;display:flex}
-#map{flex:1;min-width:0}
-#viewer{display:none;flex:1.2;min-width:0;flex-direction:column;border-left:1px solid var(--line);background:var(--panel)}
-#wrap.open #viewer{display:flex}
-#bar{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 10px;font-size:13px;border-bottom:1px solid var(--line)}
-#bar .info{flex:1;min-width:140px}
-#bar .info code{font-size:11px;color:var(--muted)}
-#bar button,#bar a{font:inherit;font-size:12px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);cursor:pointer;text-decoration:none;white-space:nowrap}
-#bar button:hover,#bar a:hover{border-color:var(--accent)}
-.pane{flex:1;min-height:0;display:flex;flex-direction:column}
-.pane h3{flex:none;margin:0;padding:4px 10px;font-size:13px;font-weight:600}
-.pane h3 span{font-weight:400;color:var(--muted);margin-left:6px}
-.pane iframe{flex:1;width:100%;border:0;background:#000}
-.pane iframe[hidden]{display:none}
-.msg{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;font-size:13px;color:var(--muted)}
-.msg[hidden]{display:none}
-.sv{flex:1;min-height:0;background:#000}
-.sv[hidden]{display:none}
-</style><style>
-.selpt{border-radius:50%;background:#e11d48;border:3px solid #fff;box-shadow:0 0 0 1px #0006;box-sizing:border-box}
-@media (max-width:800px){
-  #wrap{flex-direction:column}
-  #wrap.open #map{flex:0 0 32%}
-  #viewer{border-left:0;border-top:1px solid var(--line)}
-}
+#map{flex:1;min-height:0}
+header{flex:none}
 </style></head><body>
-<header><b>2008年のストリートビュー 今昔（__N__地点）</b>
+<header><b>2008年のストリートビュー（__N__地点）</b>
 <span id="lg"></span><br>
-<span style="color:var(--muted)">点をクリックすると、2008年と現在のストリートビューを並べて表示します</span></header>
-<div id="wrap">
+<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます</span></header>
 <div id="map"></div>
-<div id="viewer">
-  <div id="bar">
-    <div class="info" id="info"></div>
-    <button id="left" title="両方を左に90°回す">↺ 90°</button>
-    <button id="back" title="両方を反対向きにする">反対向き</button>
-    <button id="right" title="両方を右に90°回す">↻ 90°</button>
-    <a id="g08" target="_blank" rel="noopener">2008年をGoogleマップで</a>
-    <a id="gnow" target="_blank" rel="noopener">現在をGoogleマップで</a>
-    <button id="close" title="閉じる">✕</button>
-  </div>
-  <div class="pane"><h3><span id="m08" style="margin:0;color:inherit;font-weight:600">2008年</span><span id="far"></span></h3><iframe id="f08" title="2008年のストリートビュー" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe><div id="p08" class="sv" hidden></div></div>
-  <div class="pane"><h3>現在<span id="hnow">（近くの道路の最新の画像）</span></h3><iframe id="fnow" title="現在のストリートビュー" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe><div id="pnow" class="sv" hidden></div><div id="nonow" class="msg" hidden></div></div>
-</div>
-</div>
 <script>
 const IDS=__IDS__, LAT=__LAT__, LON=__LON__, MON=__MON__, BASE=[__BLAT__,__BLON__];
 const MONTHS=__MONTHS__, COLORS=['#0f766e','#c2410c','#1d4ed8','#7c3aed','#b91c1c'];
@@ -74,7 +33,6 @@ function each(x0,y0,x1,y1,f){ // world px at zoom0
   if((bx1-bx0+1)*(by1-by0+1)>B.size){for(const [k,a] of B){const c=k.indexOf(','),bx=+k.slice(0,c),by=+k.slice(c+1); if(bx>=bx0&&bx<=bx1&&by>=by0&&by<=by1)for(const i of a)f(i);} return;}
   for(let bx=bx0;bx<=bx1;bx++)for(let by=by0;by<=by1;by++){const a=B.get(bx+','+by); if(a)for(const i of a)f(i);}
 }
-const lat=i=>BASE[0]+LAT[i]/1e6, lon=i=>BASE[1]+LON[i]/1e6;
 const map=L.map('map');
 const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>';
 const bases={'淡色地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
@@ -88,173 +46,16 @@ const Pts=L.GridLayer.extend({createTile(c){
   each(x0-pad,y0-pad,x1+pad,y1+pad,i=>{g.fillStyle=COLORS[MON[i]]; g.beginPath(); g.arc((wx[i]-x0)*sc,(wy[i]-y0)*sc,r,0,6.2832); g.fill();});
   return cv;}});
 new Pts({maxZoom:19}).addTo(map);
-
-// --- then-and-now viewer ---
-const wrap=document.getElementById('wrap'), $=id=>document.getElementById(id);
-const sel=L.marker([0,0],{icon:L.divIcon({className:'selpt',iconSize:[18,18]}),interactive:false,keyboard:false,opacity:0});
-let cur=-1, heading=0;
-function nearest(px,py,tol,skip){let best=-1,bd=tol*tol; each(px-tol,py-tol,px+tol,py+tol,i=>{if(i===skip)return; const d=(wx[i]-px)**2+(wy[i]-py)**2; if(d<bd){bd=d;best=i;}}); return best;}
-function roadHeading(i){ // bearing toward the nearest neighbouring 2008 panorama (~ along the road)
-  const j=nearest(wx[i],wy[i],80/2**19,i); if(j<0)return 0;
-  const y=Math.sin((lon(j)-lon(i))*Math.PI/180)*Math.cos(lat(j)*Math.PI/180);
-  const x=Math.cos(lat(i)*Math.PI/180)*Math.sin(lat(j)*Math.PI/180)-Math.sin(lat(i)*Math.PI/180)*Math.cos(lat(j)*Math.PI/180)*Math.cos((lon(j)-lon(i))*Math.PI/180);
-  return Math.round((Math.atan2(y,x)*180/Math.PI+360)%360);
-}
-// The current panorama is looked up by ID from now/<z13x>_<z13y>.json (nearest Google road
-// panorama within 30 m, built offline from coverage tiles). Searching by location instead can land
-// on underground/indoor levels or user-uploaded photospheres.
-const nowChunks=new Map();
-function nowChunk(i){
-  const x=Math.floor(wx[i]*2**13/256), y=Math.floor(wy[i]*2**13/256), k=`${x}_${y}`;
-  if(!nowChunks.has(k)) nowChunks.set(k, fetch(`now/${k}.json`).then(r=>r.ok?r.json():{}).catch(()=>{nowChunks.delete(k); return null;}));
-  return nowChunks.get(k);
-}
-const embed=(id,la,lo,h)=>`https://www.google.com/maps/embed?pb=!4v1!6m8!1m7!1s${id}!2m2!1d${la}!2d${lo}!3f${h}!4f0!5f0.78`;
-const gmaps=(id,la,lo,h)=>`https://www.google.com/maps/@${la},${lo},3a,75y,${h}h,90t/data=!3m4!1e1!3m2!1s${id}!2e0`;
-function showNow(nowId,failed){
-  const i=cur, la=lat(i).toFixed(7), lo=lon(i).toFixed(7), h=heading;
-  $('fnow').hidden=!nowId; $('nonow').hidden=!!nowId; $('gnow').hidden=!nowId;
-  if(nowId){ $('fnow').src=embed(nowId,la,lo,h); $('gnow').href=gmaps(nowId,la,lo,h); return; }
-  $('fnow').src='about:blank';
-  $('nonow').textContent=failed?'現在の画像のデータを読み込めませんでした（公開サイトから開いてください）':'この地点の30m以内には、現在のGoogleの道路画像がありません';
-}
-function render(){  // embed (iframe) mode: two independent views
-  const i=cur, la=lat(i).toFixed(7), lo=lon(i).toFixed(7), h=heading;
-  $('f08').src=embed(IDS[i],la,lo,h);
-  $('g08').href=gmaps(IDS[i],la,lo,h);
-  history.replaceState(null,'',`#${IDS[i]},${h}`);
-  nowChunk(i).then(c=>{ if(cur===i) showNow(c&&c[IDS[i]], c===null); });
-}
-
-// --- synced mode (Maps JavaScript API, needs window.GMAPS_KEY from config.js) ---
-const KEY=(window.GMAPS_KEY||'').trim();
-let sv=null, svLoad=null, svFailed=false;
-const iframeMode=()=>!KEY||svFailed;
-window.gm_authFailure=()=>{ svFailed=true; showMode(); if(cur>=0) render(); };  // bad/unauthorised key
-function showMode(){
-  const f=iframeMode();
-  $('f08').hidden=!f; $('fnow').hidden=!f; $('p08').hidden=f; $('pnow').hidden=f;
-}
-function loadSV(){
-  if(svLoad) return svLoad;
-  svLoad=new Promise((res,rej)=>{
-    window.__svInit=res;
-    const s=document.createElement('script');
-    s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(KEY)}&callback=__svInit&loading=async&v=weekly`;
-    s.async=true; s.onerror=rej; document.head.appendChild(s);
-  }).then(initSV).catch(()=>{ svFailed=true; showMode(); return null; });
-  return svLoad;
-}
-const opts={addressControl:false,fullscreenControl:true,motionTracking:false,motionTrackingControl:false,imageDateControl:true,linksControl:true,clickToGo:true,zoomControl:true,panControl:false,visible:true};
-let expect08=null, expectNow=null, hashTimer=0;
-function initSV(){
-  const p08=new google.maps.StreetViewPanorama($('p08'),opts), pnow=new google.maps.StreetViewPanorama($('pnow'),opts);
-  sv={p08,pnow};
-  // keep heading/pitch/zoom identical; only copy real differences so the two listeners don't echo forever
-  const near=(a,b)=>Math.abs(((a-b)%360+540)%360-180)<0.05;
-  const mirror=(src,dst)=>{
-    const a=src.getPov(), b=dst.getPov();
-    if(!near(a.heading,b.heading)||Math.abs(a.pitch-b.pitch)>0.05) dst.setPov({heading:a.heading,pitch:a.pitch});
-    if(Math.abs((src.getZoom()||0)-(dst.getZoom()||0))>0.01) dst.setZoom(src.getZoom());
-  };
-  const onView=src=>{
-    if(src===pnow&&$('pnow').hidden) return;
-    mirror(src, src===p08?pnow:p08);
-    heading=Math.round(((p08.getPov().heading%360)+360)%360);
-    updateLinks(); clearTimeout(hashTimer); hashTimer=setTimeout(()=>{ if(cur>=0) history.replaceState(null,'',`#${IDS[cur]},${heading}`); },300);
-  };
-  p08.addListener('pov_changed',()=>onView(p08)); p08.addListener('zoom_changed',()=>onView(p08));
-  pnow.addListener('pov_changed',()=>onView(pnow)); pnow.addListener('zoom_changed',()=>onView(pnow));
-  // walking in either view moves the other one to the matching place
-  p08.addListener('pano_changed',()=>{
-    const id=p08.getPano(); if(!id) return;
-    if(id===expect08){ expect08=null; return; }
-    const i=indexOfPano(id,p08.getPosition()); if(i<0) return;
-    setCurrent(i); loadNow(i);
-  });
-  pnow.addListener('pano_changed',()=>{
-    const id=pnow.getPano(); if(!id) return;
-    if(id===expectNow){ expectNow=null; return; }
-    const pos=pnow.getPosition(); if(!pos) return;
-    const w=L.CRS.EPSG3857.latLngToPoint(L.latLng(pos.lat(),pos.lng()),0);
-    const tol=30/(40075016.686*Math.cos(pos.lat()*Math.PI/180)/256);   // 30 m in zoom-0 world pixels
-    const j=nearest(w.x,w.y,tol,-1);
-    if(j>=0&&j!==cur){ expect08=IDS[j]; p08.setPano(IDS[j]); setCurrent(j); }
-    // the current view can wander where 2008 imagery never went; say how far behind the 2008 view is
-    const d=Math.round(Math.hypot((lat(cur)-pos.lat())*111320,(lon(cur)-pos.lng())*111320*Math.cos(pos.lat()*Math.PI/180)));
-    $('far').textContent=d>30?`現在側の位置から${d}m離れています（この先に2008年の画像はありません）`:'';
-    updateLinks();
-  });
-  return sv;
-}
-function indexOfPano(id,pos){  // look nearby first, fall back to a full scan
-  if(pos){ const w=L.CRS.EPSG3857.latLngToPoint(L.latLng(pos.lat(),pos.lng()),0);
-    let hit=-1; each(w.x-1e-5,w.y-1e-5,w.x+1e-5,w.y+1e-5,i=>{ if(IDS[i]===id) hit=i; }); if(hit>=0) return hit; }
-  return IDS.indexOf(id);
-}
-function setCurrent(i){
-  cur=i; $('far').textContent='';
-  $('m08').textContent=MONTHS[MON[i]];
-  $('info').innerHTML=`${lat(i).toFixed(5)}, ${lon(i).toFixed(5)}<br><code>${IDS[i]}</code>`;
-  sel.setLatLng([lat(i),lon(i)]).setOpacity(1);
-  if(!map.getBounds().contains(sel.getLatLng())) map.panTo(sel.getLatLng());
-  history.replaceState(null,'',`#${IDS[i]},${heading}`);
-  updateLinks();
-}
-function loadNow(i){
-  nowChunk(i).then(c=>{
-    if(cur!==i) return;
-    const id=c&&c[IDS[i]];
-    $('pnow').hidden=!id; $('nonow').hidden=!!id; $('gnow').hidden=!id;
-    if(!id){ $('nonow').textContent=c===null?'現在の画像のデータを読み込めませんでした（公開サイトから開いてください）':'この地点の30m以内には、現在のGoogleの道路画像がありません'; return; }
-    if(sv.pnow.getPano()!==id){ expectNow=id; sv.pnow.setPano(id); }
-    const p=sv.p08.getPov(); sv.pnow.setPov({heading:p.heading,pitch:p.pitch}); sv.pnow.setZoom(sv.p08.getZoom());
-    updateLinks();
-  });
-}
-function updateLinks(){
-  if(!sv||cur<0) return;
-  const la=lat(cur).toFixed(7), lo=lon(cur).toFixed(7);
-  $('g08').href=gmaps(IDS[cur],la,lo,heading);
-  const n=sv.pnow.getPano(), np=sv.pnow.getPosition();
-  if(n&&np) $('gnow').href=gmaps(n,np.lat().toFixed(7),np.lng().toFixed(7),heading);
-}
-function svShow(i){
-  if(sv.p08.getPano()!==IDS[i]){ expect08=IDS[i]; sv.p08.setPano(IDS[i]); }
-  sv.p08.setPov({heading,pitch:0}); sv.p08.setZoom(1);
-  setCurrent(i); loadNow(i);
-}
-
-function select(i,h){
-  if(i!==cur){ $('fnow').src='about:blank'; $('nonow').hidden=true; }
-  cur=i; heading=(h==null?roadHeading(i):h);
-  $('m08').textContent=MONTHS[MON[i]];
-  $('info').innerHTML=`${lat(i).toFixed(5)}, ${lon(i).toFixed(5)}<br><code>${IDS[i]}</code>`;
-  sel.setLatLng([lat(i),lon(i)]).setOpacity(1);
-  const wasOpen=wrap.classList.contains('open'); wrap.classList.add('open'); showMode();
-  if(!wasOpen) setTimeout(()=>{map.invalidateSize(); map.panTo([lat(i),lon(i)]);},0);
-  if(iframeMode()){ render(); return; }
-  loadSV().then(s=>{ if(cur!==i) return; if(s) svShow(i); else render(); });
-}
-const turn=d=>{
-  if(cur<0) return;
-  if(!iframeMode()&&sv){ const p=sv.p08.getPov(); sv.p08.setPov({heading:((p.heading+d)%360+360)%360,pitch:p.pitch}); return; }  // the other view follows
-  heading=((heading+d)%360+360)%360; render();
-};
-$('left').onclick=()=>turn(-90); $('right').onclick=()=>turn(90); $('back').onclick=()=>turn(180);
-$('close').onclick=()=>{wrap.classList.remove('open'); sel.setOpacity(0); $('f08').src=$('fnow').src='about:blank'; cur=-1; history.replaceState(null,'',location.pathname); setTimeout(()=>map.invalidateSize(),0);};
 map.on('click',e=>{
-  const p=map.project(e.latlng,0), i=nearest(p.x,p.y,10/2**map.getZoom(),-1);
-  if(i>=0) select(i);
+  const sc=2**map.getZoom(), p=map.project(e.latlng,0), tol=10/sc; let best=-1,bd=tol*tol;
+  each(p.x-tol,p.y-tol,p.x+tol,p.y+tol,i=>{const d=(wx[i]-p.x)**2+(wy[i]-p.y)**2; if(d<bd){bd=d;best=i;}});
+  if(best<0)return;
+  const la=(BASE[0]+LAT[best]/1e6).toFixed(6), lo=(BASE[1]+LON[best]/1e6).toFixed(6);
+  const url=`https://www.google.com/maps/@${la},${lo},3a,75y,0h,90t/data=!3m4!1e1!3m2!1s${IDS[best]}!2e0`;
+  L.popup().setLatLng([la,lo]).setContent(`<b>${MONTHS[MON[best]]}</b><br>${IDS[best]}<br><a href="${url}" target="_blank" rel="noopener">Google マップで開く</a>`).openOn(map);
 });
-
 {let a=1e9,b=-1e9,c=1e9,d=-1e9;for(let i=0;i<N;i++){a=Math.min(a,LAT[i]);b=Math.max(b,LAT[i]);c=Math.min(c,LON[i]);d=Math.max(d,LON[i]);} const bb=L.latLngBounds([[BASE[0]+a/1e6,BASE[1]+c/1e6],[BASE[0]+b/1e6,BASE[1]+d/1e6]]); if(map.getSize().y>0)map.fitBounds(bb); else map.setView(bb.getCenter(),9);}
 // vector layers go in after the initial view exists (adding them during the load event leaves the renderer without bounds)
 L.geoJSON(__OUTLINE__,{style:{color:'#666',weight:1.5,dashArray:'6 6',fill:false},interactive:false}).addTo(map);
 L.circleMarker([38.1738916,140.9329488],{radius:8,color:'#000',weight:2,fill:false}).addTo(map).bindTooltip('最初のURLの地点');
-sel.addTo(map);
-// open a shared link: #<panoid>[,<heading>]
-function openHash(){const m=location.hash.match(/^#([A-Za-z0-9_-]{22})(?:,(\d+))?/); if(m){const i=IDS.indexOf(m[1]); if(i>=0){map.setView([lat(i),lon(i)],17); select(i,m[2]==null?null:+m[2]);}}}
-map.whenReady(()=>setTimeout(openHash,0));
-addEventListener('hashchange',openHash);  // a shared link pasted into an already-open tab
 </script></body></html>
