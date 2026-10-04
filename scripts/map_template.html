@@ -38,7 +38,18 @@ const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_bl
 const bases={'淡色地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
  '標準地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
  '航空写真':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI})};
-bases['淡色地図'].addTo(map); L.control.layers(bases,null,{collapsed:false}).addTo(map);
+bases['淡色地図'].addTo(map);
+// points searched with the Mirai Kioku "before" (pre-quake) view: [lat, lon, found panoid or null, label]
+const PROBES=__PROBES__;
+const probeLayer=L.layerGroup();
+for(const [la,lo,pid,label] of PROBES){
+  const mk=`https://www.miraikioku.com/?m=sv&ll=${la},${lo}&period=before`;
+  const gm=pid?`<br><a href="https://www.google.com/maps/@${la},${lo},3a,75y,0h,90t/data=!3m4!1e1!3m2!1s${pid}!2e0" target="_blank" rel="noopener">見つかった画像を Google マップで開く</a>`:'';
+  L.circleMarker([la,lo],{radius:6,weight:2,color:pid?'#14532d':'#475569',fillColor:pid?'#22c55e':'#ffffff',fillOpacity:1,bubblingMouseEvents:false})
+   .bindPopup(`<b>未来へのキオクで検索した地点</b><br>${label}<br>結果: ${pid?'2008年の画像あり':'該当なし'}${gm}<br><a href="${mk}" target="_blank" rel="noopener">未来へのキオクの「震災前」で開く</a>`)
+   .addTo(probeLayer);
+}
+L.control.layers(bases,{[`未来へのキオクで検索した地点（${PROBES.length}・緑=見つかった）`]:probeLayer},{collapsed:false}).addTo(map);
 const Pts=L.GridLayer.extend({createTile(c){
   const cv=document.createElement('canvas'); cv.width=cv.height=256; const g=cv.getContext('2d');
   const sc=2**c.z, pad=4/sc, x0=c.x*256/sc, y0=c.y*256/sc, x1=(c.x+1)*256/sc, y1=(c.y+1)*256/sc;

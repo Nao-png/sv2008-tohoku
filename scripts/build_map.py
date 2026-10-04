@@ -15,7 +15,7 @@ J=lambda x: json.dumps(x,separators=(",",":"))
 rep={"__IDS__":J([o["id"] for o in d]),"__LAT__":J([round((o["lat"]-blat)*1e6) for o in d]),
  "__LON__":J([round((o["lon"]-blon)*1e6) for o in d]),"__MON__":J([months.index(o["date"]) for o in d]),
  "__MONTHS__":json.dumps([ml[m] for m in months],ensure_ascii=False),"__BLAT__":str(blat),"__BLON__":str(blon),
- "__N__":f"{len(d):,}","__OUTLINE__":J(g)}
+ "__N__":f"{len(d):,}","__OUTLINE__":J(g),"__PROBES__":open(D+"probes.json",encoding="utf-8").read()}
 h=open(D+"map_template.html",encoding="utf-8").read().replace("2008年のストリートビュー（","2008年のストリートビュー 宮城・山形・福島・岩手・茨城（")
 for k,v in rep.items(): h=h.replace(k,v)
 open(W+"index.html","w",encoding="utf-8").write(h)

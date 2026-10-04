@@ -22,6 +22,7 @@ venv\Scripts\python -m pip install requests aiohttp numpy pillow pyproj protobuf
 | `mcrawl.py` | 宮城県版の探索（`miyagi.json` の県境内だけ広げる）。`build_map.py` からも県境の判定に使う |
 | `build_map.py` | `panos.csv` から `../index.html` と `../sv2008_panoids.csv` を作る |
 | `map_template.html` | 地図の HTML テンプレート（Leaflet + 国土地理院タイル） |
+| `probes.json` | 未来へのキオクの「震災前」表示で探した地点と結果（[緯度, 経度, 見つかった画像 ID または null, 調査名]）。地図の「未来へのキオクで検索した地点」に使う |
 | `miyagi.json` | 宮城県の県境（OpenStreetMap Nominatim から取得） |
 | `panos.csv` | 探索結果の生データ（panoid, 緯度, 経度, 撮影年月）。832,369 行 |
 | `probe09*.py`, `yonezawa.py` | 2009 年前半の画像や米沢周辺のつながりを調べた調査用スクリプト |
