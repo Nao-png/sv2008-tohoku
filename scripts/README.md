@@ -23,6 +23,7 @@ venv\Scripts\python -m pip install requests aiohttp numpy pillow pyproj protobuf
 | `build_map.py` | `panos.csv` から `../index.html` と `../sv2008_panoids.csv` を作る |
 | `map_template.html` | 地図の HTML テンプレート（Leaflet + 国土地理院タイル） |
 | `probes.json` | 未来へのキオクの「震災前」表示で探した地点と結果（[緯度, 経度, 見つかった画像 ID または null, 調査名]）。地図の「未来へのキオクで検索した地点」に使う |
+| `probe.html` | 自分の Google Maps API キーで「震災前」検索をするローカル専用ページ（`client: 'japan_prequake'`）。キーは `local_key.example.js` を `local_key.js` にコピーして書く（`local_key.js` は Git に含めない）。`http://localhost` で開き、キーの HTTP リファラー制限に localhost を追加しておく |
 | `miyagi.json` | 宮城県の県境（OpenStreetMap Nominatim から取得） |
 | `panos.csv` | 探索結果の生データ（panoid, 緯度, 経度, 撮影年月）。832,836 行 |
 | `probe09*.py`, `yonezawa.py` | 2009 年前半の画像や米沢周辺のつながりを調べた調査用スクリプト |

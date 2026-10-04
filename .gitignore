@@ -2,3 +2,7 @@
 sv2008_panoids.csv
 __pycache__/
 venv/
+
+# your own Google Maps API key (never commit)
+scripts/local_key.js
+scripts/_batch.json

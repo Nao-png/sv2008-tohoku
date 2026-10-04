@@ -47,12 +47,13 @@ async def worker(session):
             if p is None:
                 st["giveup"]+=1; L(f"giveup {pid}"); continue
             d=str(p.date)
+            if not d.startswith("2008"):
+                continue   # a searched seed can turn out to be newer imagery; keep panos.csv 2008-only
             out.write(f"{p.id},{p.lat},{p.lon},{d}\n")
             st["n"]+=1; st["months"][d]+=1
-            if d.startswith("2008"):
-                for l in (p.links or []):
-                    if l.pano.id not in seen:
-                        seen.add(l.pano.id); q.put_nowait(l.pano.id)
+            for l in (p.links or []):
+                if l.pano.id not in seen:
+                    seen.add(l.pano.id); q.put_nowait(l.pano.id)
             if st["n"]%20000==0:
                 save_frontier(); el=time.time()-t0
                 L(f"new {st['n']} total {len(seen)} queue {q.qsize()} errors {st['err']} {st['n']/el:.0f}/s last=({p.lat:.3f},{p.lon:.3f})")

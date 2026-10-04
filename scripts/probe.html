@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>震災前ストリートビュー検索（ローカル専用）</title>
+<style>body{font:14px system-ui,"Yu Gothic UI",sans-serif;margin:16px}#log{white-space:pre-wrap;font-family:monospace}</style>
+<!-- local_key.js sets window.GMAPS_KEY; it is gitignored and only used on localhost -->
+<script src="local_key.js"></script>
+</head><body>
+<h1>震災前ストリートビュー検索（ローカル専用）</h1>
+<p>Google Maps JavaScript API に <code>client: 'japan_prequake'</code> を指定して、場所から 2008 年（震災前）の画像を探すページです。
+自分の API キーを <code>scripts/local_key.js</code> に書いて、<code>http://localhost</code> で開いてください。</p>
+<div id="log"></div>
+<script>
+const log = s => { document.getElementById('log').textContent += s + '\n'; };
+window.__ready = false; window.__authFailed = false;
+window.gm_authFailure = () => { window.__authFailed = true; log('APIキーが拒否されました（キーの制限・有効化を確認してください）'); };
+// search one location with the pre-quake client: resolves {st, id}
+window.__probe = (lat, lng, client = 'japan_prequake') => new Promise(res => {
+  const d = document.createElement('div');
+  d.style.cssText = 'width:200px;height:150px;position:fixed;left:0;bottom:0;opacity:0.01;z-index:-1';
+  document.body.appendChild(d);
+  const p = new google.maps.StreetViewPanorama(d, {client, visible: true, position: new google.maps.LatLng(lat, lng)});
+  let done = false;
+  const fin = () => { if (done) return; done = true; const r = {id: p.getPano(), st: p.getStatus()}; p.setVisible(false); d.remove(); res(r); };
+  google.maps.event.addListener(p, 'status_changed', () => setTimeout(fin, 50));
+  setTimeout(fin, 12000);
+});
+// run a batch with a few parallel workers; results go to window.__out
+window.__run = async (points, workers = 3) => {
+  window.__out = []; let i = 0;
+  const w = async () => { while (i < points.length) { const [la, lo, label] = points[i++];
+    let r = await __probe(la, lo); if (r.st === 'UNKNOWN_ERROR') { await new Promise(s => setTimeout(s, 2000)); r = await __probe(la, lo); }
+    __out.push([la, lo, label || '', r.st, r.id]); } };
+  await Promise.all(Array.from({length: workers}, w));
+  return __out;
+};
+window.__init = () => { window.__ready = true; log('Google Maps API を読み込みました'); };
+if (!window.GMAPS_KEY || /ここに/.test(window.GMAPS_KEY)) log('scripts/local_key.js に APIキーが設定されていません');
+else { const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(window.GMAPS_KEY)}&callback=__init&loading=async&v=weekly`;
+  s.onerror = () => log('Google Maps API を読み込めませんでした'); document.head.appendChild(s); }
+</script>
+</body></html>
