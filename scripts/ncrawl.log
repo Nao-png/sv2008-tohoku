@@ -29,3 +29,17 @@
 00:42:07 DONE new 330 total 832707 months {'2008-06': 330} errors 0 giveup 0 4s
 00:43:55 start seen=832712 frontier=5 conc=32
 00:43:58 DONE new 129 total 832836 months {'2008-06': 129} errors 0 giveup 0 3s
+01:16:07 start seen=832838 frontier=2 conc=32
+01:16:07 DONE new 2 total 832838 months {'2011-10': 1, '2012-04': 1} errors 0 giveup 0 0s
+02:03:30 start seen=832837 frontier=1 conc=32
+02:03:36 DONE new 48 total 832884 months {'2008-06': 48} errors 0 giveup 0 6s
+02:05:23 start seen=832886 frontier=2 conc=32
+02:05:28 DONE new 59 total 832944 months {'2008-06': 59} errors 0 giveup 0 5s
+02:06:17 start seen=832945 frontier=2 conc=32
+02:06:55 DONE new 777 total 833721 months {'2008-07': 777} errors 0 giveup 0 38s
+02:08:59 start seen=833721 frontier=1 conc=32
+02:09:05 DONE new 73 total 833793 months {'2008-05': 73} errors 0 giveup 0 6s
+02:11:31 start seen=833794 frontier=1 conc=32
+02:11:32 DONE new 0 total 833794 months {} errors 0 giveup 0 0s
+02:12:27 start seen=833794 frontier=1 conc=32
+02:12:36 DONE new 354 total 834147 months {'2008-05': 354} errors 0 giveup 0 9s
