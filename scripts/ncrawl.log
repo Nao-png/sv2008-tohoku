@@ -19,3 +19,7 @@
 23:57:10 DONE new 22 total 832050 months {'2008-05': 22} errors 0 giveup 0 3s
 00:03:48 start seen=832051 frontier=1 conc=32
 00:03:53 DONE new 64 total 832114 months {'2008-06': 64} errors 0 giveup 0 5s
+00:13:35 start seen=832117 frontier=3 conc=32
+00:13:41 DONE new 196 total 832310 months {'2008-06': 196} errors 0 giveup 0 5s
+00:14:43 start seen=832312 frontier=2 conc=32
+00:14:47 DONE new 59 total 832369 months {'2008-06': 59} errors 0 giveup 0 4s
