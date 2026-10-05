@@ -59,3 +59,13 @@
 19:34:27 DONE new 0 total 835008 months {} errors 0 giveup 0 0s
 19:35:56 start seen=835024 frontier=20 conc=32
 19:36:00 DONE new 523 total 835538 months {'2008-05': 523} errors 0 giveup 0 4s
+19:51:22 start seen=835529 frontier=2 conc=32
+19:51:22 DONE new 0 total 835529 months {} errors 0 giveup 0 0s
+19:55:04 start seen=835529 frontier=2 conc=32
+19:55:04 DONE new 0 total 835529 months {} errors 0 giveup 0 0s
+20:20:58 start seen=835527 frontier=0 conc=32
+20:20:58 DONE new 0 total 835527 months {} errors 0 giveup 0 0s
+20:26:15 start seen=835529 frontier=2 conc=32
+20:26:16 DONE new 20 total 835547 months {'2008-06': 20} errors 0 giveup 0 1s
+20:28:44 start seen=835548 frontier=1 conc=32
+20:28:45 DONE new 2 total 835549 months {'2008-06': 2} errors 0 giveup 0 0s
