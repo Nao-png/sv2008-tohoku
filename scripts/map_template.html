@@ -39,11 +39,16 @@ const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_bl
 // GSI year-by-year aerial photos exist only at zoom 14-18 and only where that year was flown; the pale map shows through elsewhere
 const nendo=y=>L.tileLayer(`https://maps.gsi.go.jp/xyz/nendophoto${y}/{z}/{x}/{y}.png`,{minZoom:14,maxNativeZoom:18,maxZoom:19,attribution:GSI});
 const pale=()=>L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI});
+// pre-quake single-frame GSI photos (2002/2006/2008) aligned to today's ortho and tiled locally, one layer per town box
+const PREQ_BOXES=__PREQ_BOXES__;
+const PREQ_SRC='空中写真：<a href="https://service.gsi.go.jp/map-photos/app/" target="_blank">国土地理院</a>（2002・2006・2008年撮影の写真を位置合わせして加工）';
+const preq=()=>PREQ_BOXES.map(b=>L.tileLayer('prequake/{z}/{x}/{y}.webp',{minZoom:12,minNativeZoom:12,maxNativeZoom:17,maxZoom:19,bounds:[[b[0],b[2]],[b[1],b[3]]],attribution:PREQ_SRC}));
 const bases={'淡色地図':pale(),
  '標準地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
  '航空写真（最新）':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
  '2008年の航空写真':L.layerGroup([pale(),nendo(2008)]),
- '震災前の航空写真（2007〜10年）':L.layerGroup([pale(),nendo(2007),nendo(2010),nendo(2009),nendo(2008)])};
+ '震災前の空中写真（石巻・塩竈・東松島・女川・南三陸）':L.layerGroup([pale(),...preq()]),
+ '震災前の写真をすべて重ねる':L.layerGroup([pale(),...preq(),nendo(2007),nendo(2010),nendo(2009),nendo(2008)])};
 bases['淡色地図'].addTo(map);
 // the 2008 dots get their own pane above every base map, so switching the base map never covers them
 map.createPane('pts').style.zIndex=350;
@@ -68,10 +73,11 @@ const Pts=L.GridLayer.extend({createTile(c){
 new Pts({maxZoom:19,pane:'pts'}).addTo(map);
 // year-by-year photos only load from zoom 14, so say so instead of showing a blank map
 const hint=L.control({position:'bottomleft'});
-hint.onAdd=()=>{const d=L.DomUtil.create('div'); d.style.cssText='background:#fff;color:#1a1a1a;padding:4px 8px;border-radius:4px;font-size:12px;display:none;box-shadow:0 1px 4px rgba(0,0,0,.3)'; d.textContent='年代別の航空写真はズーム14以上で表示されます（撮影されていない場所は淡色地図のまま）'; return d;};
+hint.onAdd=()=>{const d=L.DomUtil.create('div'); d.style.cssText='background:#fff;color:#1a1a1a;padding:4px 8px;border-radius:4px;font-size:12px;display:none;box-shadow:0 1px 4px rgba(0,0,0,.3)'; d.textContent='震災前の写真はもう少し拡大すると表示されます（撮影されていない場所は淡色地図のまま）'; return d;};
 hint.addTo(map);
-const oldPhoto=[bases['2008年の航空写真'],bases['震災前の航空写真（2007〜10年）']];
-const showHint=()=>{hint.getContainer().style.display=oldPhoto.some(l=>map.hasLayer(l))&&map.getZoom()<14?'block':'none';};
+// minimum zoom at which each old-photo base map starts drawing
+const oldPhoto=[[bases['2008年の航空写真'],14],[bases['震災前の空中写真（石巻・塩竈・東松島・女川・南三陸）'],12],[bases['震災前の写真をすべて重ねる'],12]];
+const showHint=()=>{hint.getContainer().style.display=oldPhoto.some(([l,z])=>map.hasLayer(l)&&map.getZoom()<z)?'block':'none';};
 map.on('baselayerchange zoomend',showHint);
 map.on('click',e=>{
   const sc=2**map.getZoom(), p=map.project(e.latlng,0), tol=10/sc; let best=-1,bd=tol*tol;
