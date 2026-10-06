@@ -16,7 +16,7 @@ header{flex:none}
 </style></head><body>
 <header><b>2008年のストリートビュー（__N__地点）</b>
 <span id="lg"></span><br>
-<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます</span></header>
+<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます。右上の地図切り替えで当時（2008年）の航空写真も見られます（ズーム14以上）</span></header>
 <div id="map"></div>
 <script>
 const IDS=__IDS__, LAT=__LAT__, LON=__LON__, MON=__MON__, BASE=[__BLAT__,__BLON__];
@@ -33,12 +33,20 @@ function each(x0,y0,x1,y1,f){ // world px at zoom0
   if((bx1-bx0+1)*(by1-by0+1)>B.size){for(const [k,a] of B){const c=k.indexOf(','),bx=+k.slice(0,c),by=+k.slice(c+1); if(bx>=bx0&&bx<=bx1&&by>=by0&&by<=by1)for(const i of a)f(i);} return;}
   for(let bx=bx0;bx<=bx1;bx++)for(let by=by0;by<=by1;by++){const a=B.get(bx+','+by); if(a)for(const i of a)f(i);}
 }
-const map=L.map('map');
+// explicit zoom limits: otherwise Leaflet takes the year-photo layers' minZoom 14 as the whole map's minimum
+const map=L.map('map',{minZoom:5,maxZoom:19});
 const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>';
-const bases={'淡色地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
+// GSI year-by-year aerial photos exist only at zoom 14-18 and only where that year was flown; the pale map shows through elsewhere
+const nendo=y=>L.tileLayer(`https://maps.gsi.go.jp/xyz/nendophoto${y}/{z}/{x}/{y}.png`,{minZoom:14,maxNativeZoom:18,maxZoom:19,attribution:GSI});
+const pale=()=>L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI});
+const bases={'淡色地図':pale(),
  '標準地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
- '航空写真':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI})};
+ '航空写真（最新）':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
+ '2008年の航空写真':L.layerGroup([pale(),nendo(2008)]),
+ '震災前の航空写真（2007〜10年）':L.layerGroup([pale(),nendo(2007),nendo(2010),nendo(2009),nendo(2008)])};
 bases['淡色地図'].addTo(map);
+// the 2008 dots get their own pane above every base map, so switching the base map never covers them
+map.createPane('pts').style.zIndex=350;
 // points searched with the Mirai Kioku "before" (pre-quake) view: [lat, lon, found panoid or null, label]
 const PROBES=__PROBES__;
 const probeLayer=L.layerGroup();
@@ -49,14 +57,22 @@ for(const [la,lo,pid,label] of PROBES){
    .bindPopup(`<b>未来へのキオクで検索した地点</b><br>${label}<br>結果: ${pid?'2008年の画像あり':'該当なし'}${gm}<br><a href="${mk}" target="_blank" rel="noopener">未来へのキオクの「震災前」で開く</a>`)
    .addTo(probeLayer);
 }
-L.control.layers(bases,{[`未来へのキオクで検索した地点（${PROBES.length}・緑=見つかった）`]:probeLayer},{collapsed:false}).addTo(map);
+L.control.layers(bases,{[`検索した地点（${PROBES.length.toLocaleString()}・緑=見つかった）`]:probeLayer},{collapsed:window.innerWidth<900}).addTo(map);
 const Pts=L.GridLayer.extend({createTile(c){
   const cv=document.createElement('canvas'); cv.width=cv.height=256; const g=cv.getContext('2d');
   const sc=2**c.z, pad=4/sc, x0=c.x*256/sc, y0=c.y*256/sc, x1=(c.x+1)*256/sc, y1=(c.y+1)*256/sc;
-  const r=c.z>=16?3.5:c.z>=14?2.2:1.3;
-  each(x0-pad,y0-pad,x1+pad,y1+pad,i=>{g.fillStyle=COLORS[MON[i]]; g.beginPath(); g.arc((wx[i]-x0)*sc,(wy[i]-y0)*sc,r,0,6.2832); g.fill();});
+  const r=c.z>=16?3.5:c.z>=14?2.2:1.3, ring=c.z>=14;   // a white ring keeps close-up dots readable on aerial photos
+  g.strokeStyle='rgba(255,255,255,.9)'; g.lineWidth=1;
+  each(x0-pad,y0-pad,x1+pad,y1+pad,i=>{g.fillStyle=COLORS[MON[i]]; g.beginPath(); g.arc((wx[i]-x0)*sc,(wy[i]-y0)*sc,r,0,6.2832); g.fill(); if(ring)g.stroke();});
   return cv;}});
-new Pts({maxZoom:19}).addTo(map);
+new Pts({maxZoom:19,pane:'pts'}).addTo(map);
+// year-by-year photos only load from zoom 14, so say so instead of showing a blank map
+const hint=L.control({position:'bottomleft'});
+hint.onAdd=()=>{const d=L.DomUtil.create('div'); d.style.cssText='background:#fff;color:#1a1a1a;padding:4px 8px;border-radius:4px;font-size:12px;display:none;box-shadow:0 1px 4px rgba(0,0,0,.3)'; d.textContent='年代別の航空写真はズーム14以上で表示されます（撮影されていない場所は淡色地図のまま）'; return d;};
+hint.addTo(map);
+const oldPhoto=[bases['2008年の航空写真'],bases['震災前の航空写真（2007〜10年）']];
+const showHint=()=>{hint.getContainer().style.display=oldPhoto.some(l=>map.hasLayer(l))&&map.getZoom()<14?'block':'none';};
+map.on('baselayerchange zoomend',showHint);
 map.on('click',e=>{
   const sc=2**map.getZoom(), p=map.project(e.latlng,0), tol=10/sc; let best=-1,bd=tol*tol;
   each(p.x-tol,p.y-tol,p.x+tol,p.y+tol,i=>{const d=(wx[i]-p.x)**2+(wy[i]-p.y)**2; if(d<bd){bd=d;best=i;}});
