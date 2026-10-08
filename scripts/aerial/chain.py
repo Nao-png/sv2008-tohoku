@@ -4,7 +4,7 @@ import json, math
 import numpy as np, cv2
 from common import *
 G = json.load(open(D + "georef.json", encoding="utf-8"))
-C = {f'{x["reference_number"]}-{x["course_number"]}-{x["photo_number"]}': x for x in json.load(open(D + "chosen.json", encoding="utf-8"))}
+C = {f'{x["reference_number"]}-{x["course_number"]}-{x["photo_number"]}': x for f in ("chosen_v1.json", "chosen.json") for x in json.load(open(D + f, encoding="utf-8"))}   # earlier and current selections
 solid = {k for k, r in G.items() if "H" in r and "fallback_from" not in r.get("info", {})}   # matched to the ortho
 solid |= {k for k, r in G.items() if r.get("info", {}).get("fallback_from") and "src" in r}       # refined fallbacks
 todo = [k for k in C if k not in solid]

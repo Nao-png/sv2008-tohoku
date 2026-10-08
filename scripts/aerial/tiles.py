@@ -6,7 +6,7 @@ from scipy.interpolate import RBFInterpolator
 from common import *
 
 ZMAX = int(sys.argv[1]) if len(sys.argv) > 1 else 17
-OUT = sys.argv[2] if len(sys.argv) > 2 else D + "tiles"
+OUT = (D + sys.argv[2]) if len(sys.argv) > 2 else D + "tiles"
 QUALITY = 70
 G = json.load(open(D + "georef.json", encoding="utf-8"))
 ph = []

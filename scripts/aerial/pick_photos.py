@@ -2,13 +2,6 @@
 # centre is nearest (only photos from one survey per box, preferring the newest), so the mosaic needs few frames.
 import json, math, urllib.parse
 from common import *
-BOXES = {   # name: (lat0, lat1, lon0, lon1)
-    "塩竈": (38.290, 38.335, 140.995, 141.080),
-    "石巻": (38.400, 38.450, 141.235, 141.365),
-    "東松島": (38.360, 38.430, 141.120, 141.225),
-    "女川": (38.430, 38.460, 141.430, 141.470),
-    "南三陸": (38.660, 38.695, 141.425, 141.470),
-}
 def search(lat0, lat1, lon0, lon1):
     out = {}
     la = lat0 - 0.03

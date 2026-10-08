@@ -6,7 +6,7 @@ import numpy as np, cv2
 from common import *
 from refine import refine
 G = json.load(open(D + "georef.json", encoding="utf-8"))
-C = {f'{x["reference_number"]}-{x["course_number"]}-{x["photo_number"]}': x for x in json.load(open(D + "chosen.json", encoding="utf-8"))}
+C = {f'{x["reference_number"]}-{x["course_number"]}-{x["photo_number"]}': x for f in ("chosen_v1.json", "chosen.json") for x in json.load(open(D + f, encoding="utf-8"))}   # earlier and current selections
 mpp17 = lambda lat: 156543.03 * math.cos(math.radians(lat)) / 2 ** 17
 def centre_err(k, H, size):
     x = C[k]; lon, lat = x["geom_center_pos"]; h, w = size
