@@ -16,7 +16,7 @@ header{flex:none}
 </style></head><body>
 <header><b>2008年のストリートビュー（__N__地点）</b>
 <span id="lg"></span><br>
-<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます。右上の地図切り替えで当時（2008年）の航空写真も見られます（ズーム14以上）</span></header>
+<span style="color:var(--muted)">点をクリックすると、その地点の2008年の画像を Google マップで開くリンクが出ます</span></header>
 <div id="map"></div>
 <script>
 const IDS=__IDS__, LAT=__LAT__, LON=__LON__, MON=__MON__, BASE=[__BLAT__,__BLON__];
@@ -33,22 +33,11 @@ function each(x0,y0,x1,y1,f){ // world px at zoom0
   if((bx1-bx0+1)*(by1-by0+1)>B.size){for(const [k,a] of B){const c=k.indexOf(','),bx=+k.slice(0,c),by=+k.slice(c+1); if(bx>=bx0&&bx<=bx1&&by>=by0&&by<=by1)for(const i of a)f(i);} return;}
   for(let bx=bx0;bx<=bx1;bx++)for(let by=by0;by<=by1;by++){const a=B.get(bx+','+by); if(a)for(const i of a)f(i);}
 }
-// explicit zoom limits: otherwise Leaflet takes the year-photo layers' minZoom 14 as the whole map's minimum
 const map=L.map('map',{minZoom:5,maxZoom:19});
 const GSI='<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>';
-// GSI year-by-year aerial photos exist only at zoom 14-18 and only where that year was flown; the pale map shows through elsewhere
-const nendo=y=>L.tileLayer(`https://maps.gsi.go.jp/xyz/nendophoto${y}/{z}/{x}/{y}.png`,{minZoom:14,maxNativeZoom:18,maxZoom:19,attribution:GSI});
-const pale=()=>L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI});
-// pre-quake single-frame GSI photos (2002/2006/2008) aligned to today's ortho and tiled locally, one layer per town box
-const PREQ_BOXES=__PREQ_BOXES__;
-const PREQ_SRC='空中写真：<a href="https://service.gsi.go.jp/map-photos/app/" target="_blank">国土地理院</a>（2001〜2008年撮影の写真を位置合わせして加工）';
-const preq=()=>PREQ_BOXES.map(b=>L.tileLayer('prequake/{z}/{x}/{y}.webp',{minZoom:12,minNativeZoom:12,maxNativeZoom:17,maxZoom:19,bounds:[[b[0],b[2]],[b[1],b[3]]],attribution:PREQ_SRC}));
-const bases={'淡色地図':pale(),
+const bases={'淡色地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
  '標準地図':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
- '航空写真（最新）':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI}),
- '2008年の航空写真':L.layerGroup([pale(),nendo(2008)]),
- '震災前の空中写真（宮城県沿岸 2001〜08年）':L.layerGroup([pale(),...preq()]),
- '震災前の写真をすべて重ねる':L.layerGroup([pale(),...preq(),nendo(2007),nendo(2010),nendo(2009),nendo(2008)])};
+ '航空写真':L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg',{maxNativeZoom:18,maxZoom:19,attribution:GSI})};
 bases['淡色地図'].addTo(map);
 // the 2008 dots get their own pane above every base map, so switching the base map never covers them
 map.createPane('pts').style.zIndex=350;
@@ -71,14 +60,6 @@ const Pts=L.GridLayer.extend({createTile(c){
   each(x0-pad,y0-pad,x1+pad,y1+pad,i=>{g.fillStyle=COLORS[MON[i]]; g.beginPath(); g.arc((wx[i]-x0)*sc,(wy[i]-y0)*sc,r,0,6.2832); g.fill(); if(ring)g.stroke();});
   return cv;}});
 new Pts({maxZoom:19,pane:'pts'}).addTo(map);
-// year-by-year photos only load from zoom 14, so say so instead of showing a blank map
-const hint=L.control({position:'bottomleft'});
-hint.onAdd=()=>{const d=L.DomUtil.create('div'); d.style.cssText='background:#fff;color:#1a1a1a;padding:4px 8px;border-radius:4px;font-size:12px;display:none;box-shadow:0 1px 4px rgba(0,0,0,.3)'; d.textContent='震災前の写真はもう少し拡大すると表示されます（撮影されていない場所は淡色地図のまま）'; return d;};
-hint.addTo(map);
-// minimum zoom at which each old-photo base map starts drawing
-const oldPhoto=[[bases['2008年の航空写真'],14],[bases['震災前の空中写真（宮城県沿岸 2001〜08年）'],12],[bases['震災前の写真をすべて重ねる'],12]];
-const showHint=()=>{hint.getContainer().style.display=oldPhoto.some(([l,z])=>map.hasLayer(l)&&map.getZoom()<z)?'block':'none';};
-map.on('baselayerchange zoomend',showHint);
 map.on('click',e=>{
   const sc=2**map.getZoom(), p=map.project(e.latlng,0), tol=10/sc; let best=-1,bd=tol*tol;
   each(p.x-tol,p.y-tol,p.x+tol,p.y+tol,i=>{const d=(wx[i]-p.x)**2+(wy[i]-p.y)**2; if(d<bd){bd=d;best=i;}});
